@@ -112,6 +112,7 @@ function getIdleTime(startTime, endTime) {
 // Returns: string formatted as h:mm:ss
 // ============================================================
 function getActiveTime(shiftDuration, idleTime) {
+  // TODO: Implement this function
   let s1 = shiftDuration.split(":");
   let s2 = idleTime.split(":");
 
@@ -142,6 +143,7 @@ function getActiveTime(shiftDuration, idleTime) {
 // Returns: boolean
 // ============================================================
 function metQuota(date, activeTime) {
+  // TODO: Implement this function
   let parts = date.split("-");
   let year = Number(parts[0]);
   let month = Number(parts[1]);
@@ -176,10 +178,11 @@ function metQuota(date, activeTime) {
 // Returns: object with 10 properties or empty object {}
 // ============================================================
 function addShiftRecord(textFile, shiftObj) {
+  // TODO: Implement this function
   let data = fs.readFileSync(textFile, "utf8");
   let lines = data.trim().split("\n");
 
-  // check duplicate (skip header)
+  // skip header
   for (let i = 1; i < lines.length; i++) {
     let parts = lines[i].split(",");
 
@@ -191,7 +194,7 @@ function addShiftRecord(textFile, shiftObj) {
     }
   }
 
-  // calculate values (assuming you already wrote these functions)
+  // calculate values
   let shiftDuration = getShiftDuration(shiftObj.startTime, shiftObj.endTime);
   let idleTime = getIdleTime(shiftObj.startTime, shiftObj.endTime);
   let activeTime = getActiveTime(shiftDuration, idleTime);
@@ -221,10 +224,8 @@ function addShiftRecord(textFile, shiftObj) {
     "," +
     hasBonus;
 
-  // add to file
   fs.appendFileSync(textFile, "\n" + newLine);
 
-  // return object with 10 properties
   return {
     driverID: shiftObj.driverID,
     driverName: shiftObj.driverName,
@@ -249,6 +250,7 @@ function addShiftRecord(textFile, shiftObj) {
 // ============================================================
 
 function setBonus(textFile, driverID, date, newValue) {
+  // TODO: Implement this function
   let lines = fs.readFileSync(textFile, "utf8").split("\n");
 
   for (let i = 1; i < lines.length; i++) {
@@ -271,6 +273,7 @@ function setBonus(textFile, driverID, date, newValue) {
 // Returns: number (-1 if driverID not found)
 // ============================================================
 function countBonusPerMonth(textFile, driverID, month) {
+  // TODO: Implement this function
   let lines = fs.readFileSync(textFile, "utf8").split("\n");
 
   let count = 0;
@@ -311,6 +314,7 @@ function countBonusPerMonth(textFile, driverID, month) {
 // Returns: string formatted as hhh:mm:ss
 // ============================================================
 function getTotalActiveHoursPerMonth(textFile, driverID, month) {
+  // TODO: Implement this function
   let data = fs.readFileSync(textFile, "utf8").split("\n");
 
   let totalSeconds = 0;
@@ -358,7 +362,14 @@ function getTotalActiveHoursPerMonth(textFile, driverID, month) {
 // Returns: string formatted as hhh:mm:ss
 // ============================================================
 
-function getRequiredHoursPerMonth(textFile, rateFile, bonusCount, staffID, month) {
+function getRequiredHoursPerMonth(
+  textFile,
+  rateFile,
+  bonusCount,
+  staffID,
+  month,
+) {
+  // TODO: Implement this function
   let shifts = fs.readFileSync(textFile, "utf8").split("\n");
   let rates = fs.readFileSync(rateFile, "utf8").split("\n");
 
@@ -395,10 +406,8 @@ function getRequiredHoursPerMonth(textFile, rateFile, bonusCount, staffID, month
 
       let day = d.getDate();
 
-      if (month === 4 && day >= 10 && day <= 30)
-        totalSeconds += 6 * 3600;
-      else
-        totalSeconds += 8 * 3600 + 24 * 60;
+      if (month === 4 && day >= 10 && day <= 30) totalSeconds += 6 * 3600;
+      else totalSeconds += 8 * 3600 + 24 * 60;
     }
   }
 
@@ -410,7 +419,7 @@ function getRequiredHoursPerMonth(textFile, rateFile, bonusCount, staffID, month
   let minutes = Math.floor((totalSeconds % 3600) / 60);
   let seconds = totalSeconds % 60;
 
-  return `${hours}:${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}`;
+  return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 // ============================================================
 // Function 10: getNetPay(driverID, actualHours, requiredHours, rateFile)
@@ -427,6 +436,7 @@ function timeToSeconds(t) {
 }
 
 function getNetPay(driverID, actualHours, requiredHours, rateFile) {
+  // TODO: Implement this function
   let lines = fs.readFileSync(rateFile, "utf8").trim().split("\n");
 
   let basePay = 0;
