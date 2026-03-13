@@ -112,16 +112,18 @@ function getIdleTime(startTime, endTime) {
 // Returns: string formatted as h:mm:ss
 // ============================================================
 function getActiveTime(shiftDuration, idleTime) {
-  // TODO: Implement this function
   let s1 = shiftDuration.split(":");
   let s2 = idleTime.split(":");
 
   let shiftSeconds =
     parseInt(s1[0]) * 3600 + parseInt(s1[1]) * 60 + parseInt(s1[2]);
+
   let idleSeconds =
     parseInt(s2[0]) * 3600 + parseInt(s2[1]) * 60 + parseInt(s2[2]);
 
   let diff = shiftSeconds - idleSeconds;
+
+  if (diff < 0) diff = 0;
 
   let h = Math.floor(diff / 3600);
   let m = Math.floor((diff % 3600) / 60);
@@ -249,11 +251,11 @@ function addShiftRecord(textFile, shiftObj) {
 function setBonus(textFile, driverID, date, newValue) {
   let lines = fs.readFileSync(textFile, "utf8").split("\n");
 
-  for (let i = 0; i < lines.length; i++) {
+  for (let i = 1; i < lines.length; i++) {
     let parts = lines[i].split(",");
 
-    if (parts[0] === driverID && parts[1] === date) {
-      parts[5] = newValue.toString(); // update hasBonus
+    if (parts[0] === driverID && parts[2] === date) {
+      parts[9] = newValue.toString();
       lines[i] = parts.join(",");
     }
   }
@@ -314,8 +316,6 @@ function getTotalActiveHoursPerMonth(textFile, driverID, month) {
   let totalSeconds = 0;
 
   for (let i = 1; i < data.length; i++) {
-    // skip header
-
     let line = data[i].trim();
     if (line === "") continue;
 
@@ -329,6 +329,7 @@ function getTotalActiveHoursPerMonth(textFile, driverID, month) {
 
     if (id === driverID && lineMonth === month) {
       let timeParts = activeTime.split(":");
+
       let h = parseInt(timeParts[0]);
       let m = parseInt(timeParts[1]);
       let s = parseInt(timeParts[2]);
@@ -341,13 +342,12 @@ function getTotalActiveHoursPerMonth(textFile, driverID, month) {
   let minutes = Math.floor((totalSeconds % 3600) / 60);
   let seconds = totalSeconds % 60;
 
-  let hhh = String(hours).padStart(3, "0");
+  let hhh = String(hours);
   let mm = String(minutes).padStart(2, "0");
   let ss = String(seconds).padStart(2, "0");
 
   return `${hhh}:${mm}:${ss}`;
 }
-
 // ============================================================
 // Function 9: getRequiredHoursPerMonth(textFile, rateFile, bonusCount, driverID, month)
 // textFile: (typeof string) path to shifts text file
@@ -358,18 +358,11 @@ function getTotalActiveHoursPerMonth(textFile, driverID, month) {
 // Returns: string formatted as hhh:mm:ss
 // ============================================================
 
-function getRequiredHoursPerMonth(
-  textFile,
-  rateFile,
-  bonusCount,
-  staffID,
-  month,
-) {
+function getRequiredHoursPerMonth(textFile, rateFile, bonusCount, staffID, month) {
   let shifts = fs.readFileSync(textFile, "utf8").split("\n");
   let rates = fs.readFileSync(rateFile, "utf8").split("\n");
 
   let dayOff = "";
-  let normalQuota = 0;
 
   for (let line of rates) {
     line = line.trim();
@@ -379,11 +372,10 @@ function getRequiredHoursPerMonth(
 
     if (parts[0].trim() === staffID) {
       dayOff = parts[1].trim();
-      normalQuota = parseInt(parts[3]);
     }
   }
 
-  let totalHours = 0;
+  let totalSeconds = 0;
 
   for (let i = 1; i < shifts.length; i++) {
     let line = shifts[i].trim();
@@ -403,16 +395,23 @@ function getRequiredHoursPerMonth(
 
       let day = d.getDate();
 
-      if (month === 4 && day >= 10 && day <= 30) totalHours += 6;
-      else totalHours += normalQuota;
+      if (month === 4 && day >= 10 && day <= 30)
+        totalSeconds += 6 * 3600;
+      else
+        totalSeconds += 8 * 3600 + 24 * 60;
     }
   }
 
-  totalHours -= bonusCount * 2;
+  totalSeconds -= bonusCount * 2 * 3600;
 
-  return String(totalHours).padStart(3, "0") + ":00:00";
+  if (totalSeconds < 0) totalSeconds = 0;
+
+  let hours = Math.floor(totalSeconds / 3600);
+  let minutes = Math.floor((totalSeconds % 3600) / 60);
+  let seconds = totalSeconds % 60;
+
+  return `${hours}:${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}`;
 }
-
 // ============================================================
 // Function 10: getNetPay(driverID, actualHours, requiredHours, rateFile)
 // driverID: (typeof string)
